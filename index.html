@@ -89,24 +89,26 @@
     <div class="entry">
       
         <p>Selenium was pretty confusing for me at the beginning, too many terms, Selenium RC, Selenium WebDriver, RemoteWebDriver, chromedriver, firefoxdriver, Selenium Server, selenium-server-standalone, Selenium Grid, language bindings, etc. So I’ll try to explain them from my perspective here, in short, hope it can be helpful to others searching around.</p>
+<p>Selenium is a suite of tools to automate web browsers across many platforms, in case of you have never heard of it.</p>
 <h1 id="Selenium_RC">Selenium RC</h1><p>Selenium project was started by Jason Huggins in 2004 at ThoughtWorks. </p>
 <p>Its initial design was based on pure JavaScript, means it uses JavaScirpt to control browser and simulate user interaction. How does that work? Well, for example, how would you do to use jQuery to fill a input then click a button? You may write it like this:</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$(<span class="string">'#inputId'</span>).val(<span class="string">'hello world'</span>);</span><br><span class="line">$(<span class="string">'#btnId'</span>).click();</span><br></pre></td></tr></table></figure>
 <p>That’s the basic idea, simplified. By so far Selenium is just a bunch of JavaScript scripts, which is called Selenium Core, it has to be loaded along with your tests and application in target browsers.</p>
-<p>Then there is Selenium RC, RC as Remote Control. With RC, an HTTP proxy was introduced. It receives HTTP requests, intercepts commands, launches browsers, injects Selenium Core into browsers, runs tests based on intercepted commands and return results. With this architecture, tests could be written in any language, as long as it can send HTTP requests to the proxy. Those libraries providing the interface for specific languages are referred to as bindings. Beside multiple language support, another benefit of this architecture is that now you can run your tests on Mac against IE browser on Windows, the test client and RC proxy can be deployed separately.</p>
+<p>Then there is Selenium RC, RC as Remote Control. With RC, an HTTP proxy was introduced. It receives HTTP requests, intercepts commands, launches browsers, injects Selenium Core into browsers, runs tests based on intercepted commands and returns results. With this architecture, tests could be written in any languages, as long as it can send HTTP requests to the proxy. Those libraries providing the interface for specific language are referred to as bindings. Beside multiple language support, another benefit of this architecture is that now you can run your tests on Mac against IE browser on Windows, the test client and RC proxy can be deployed separately.</p>
 <p>Here is an architecture diagram:</p>
-<p><img src="/images/selenium-terms-explained/rc-architecture.png" alt="rc-architecture.png"></p>
+<img src="/2015/03/18/selenium-terms-explained/rc-architecture.png">
 <p>The proxy also solves the same origin policy restriction, so the Selenium Core and your tests won’t have to be hosted in the same server with your application, here is an anatomy:</p>
-<p><img src="/images/selenium-terms-explained/rc-anatomy.jpg" alt="rc-anatomy.jpg"></p>
+<img src="/2015/03/18/selenium-terms-explained/rc-anatomy.jpg">
 <h1 id="Selenium_WebDriver">Selenium WebDriver</h1><p>Selenium RC served its purpose for several years, but it has a lot shortcomings. simulate the user by JavaScript is not reliable, different browsers or even different versions of the same browser may have different behaviors. Because browser security limitations, some simulation are not even possible, for example, controlling a file input inside a form. This is why WebDriver rises.</p>
-<p>WebDriver uses a very different approach vs JavaScript implementation, it talks directly to browsers use the ‘native’ method for the browser and operating system, so it interacts like a real user without any security restrictions. How the communication made to the browser may vary depends on the browser and os your are using. So for each browser, there is a library as its ‘driver’, for instance, chromedriver, firefoxdriver, etc.</p>
+<p>WebDriver uses a very different approach vs JavaScript implementation, it talks directly to browsers use the ‘native’ method for the browser and operating system, so it interacts like a real user without any security restrictions. How the communication made to the browser may vary depends on the browser and os your are using. So for each browser, there is a library as its ‘driver’, for instance, chromedriver, firefoxdriver, etc, there are even drivers for Android(<a href="http://selendroid.io/" target="_blank" rel="external">selendroid</a>) and iOS(<a href="http://ios-driver.github.io/ios-driver/" target="_blank" rel="external">ios-driver</a>).</p>
 <p>Here is an architecture diagram:</p>
-<p><img src="/images/selenium-terms-explained/webdriver-architecture.jpg" alt="webdriver-architecture.jpg"></p>
+<img src="/2015/03/18/selenium-terms-explained/webdriver-architecture.jpg">
 <p>Basically, bindings send commands across the common WebDriver API with WebDriver wire protocol, on the other side, the driver intercepts those commands and execute them on the actual browser and then returns the result all the way back. </p>
 <p>There is a protocol for communication between bindings and drivers, known as JSON Wire Protocol or WebDriver wire protocol, it’s JSON based and it’s restful, you can find its definition <a href="https://code.google.com/p/selenium/wiki/JsonWireProtocol" target="_blank" rel="external">here</a>. So very like Selenium RC, it’s still client-server architecture and still supports multiple language bindings.</p>
 <p>Speaking of server, drivers often have built in support, means drivers can directly start as a REST server and listen for commands, like chromedriver and phantomjs. </p>
 <p>There is also a Java based Selenium server, it listens for commands, start the driver and transfer those commands to the driver, it’s more like a proxy between the two. The benefits of using a Selenium server is that is can manage multiple browsers in different versions and implementations, and it support distributed grid deployment. One server can be run in standalone mode, grid hub mode or grid node mode, where node holds actual works, hub is just a router. </p>
-<p>Nodes can be configured with different capabilities, including browser type, browser version and os type, etc. Then a client using a binding can declare what capabilities it want to use to run its tests, Hub will dispatch the requirements accordingly. Hub and nodes can run on different machines, so it’s possible to deploy a grid support both Windows IE and OSX Safari, then all a client needs to know is where the hub is.</p>
+<p>Nodes can be configured with different capabilities, including browser type, browser version and os type, etc. Then a client using a binding can declare what capabilities it want to use to run its tests, grid hub will dispatch the requirements accordingly. Hub and nodes can run on different machines, so it’s possible to deploy a grid support both Windows IE and OSX Safari, then all a client needs to know is where the hub is:</p>
+<img src="/2015/03/18/selenium-terms-explained/grid-architecture.png">
 <p>Communication among these parts may look like this:</p>
 <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Bindings <span class="tag">&lt;<span class="title">-</span>&gt;</span> Selenium Server: Hub <span class="tag">&lt;<span class="title">-</span>&gt;</span> Selenium Server: Nodes <span class="tag">&lt;<span class="title">-</span>&gt;</span> Drivers <span class="tag">&lt;<span class="title">-</span>&gt;</span> Browsers</span><br></pre></td></tr></table></figure>
 <p>Complicated, right? This can be overwhelmed for beginners like me.</p>
@@ -118,12 +120,15 @@
 <li>Selenium WebDriver do the same job RC did in different way, besides the client-server architecture, all kinds of languages bindings, it also includes a set of individual browser drivers.</li>
 <li>WebDriver Server is the REST interfaces support WebDriver wire protocol, it usually is started by a specific driver. When receiving commands, it executes them on real browser.</li>
 <li>Selenium Server refers to the Java based application running in standalone, grid node or grid hub mode, which can manage others drivers. It’s a bonus, you may not need it to start working.</li>
-<li>Remote WebDriver means the WebDriver being used remotely through a wire protocol, that’s exactly what we have been talking. I guess it can also be used locally as library call, I didn’t look into it. </li>
+<li>Selenium Grid is a distributed hub-nodes style deployment, with it you can support all kinds of browsers with a single entry, and scale horizontally to handle heavy loads.</li>
+<li>Remote WebDriver means the WebDriver being used remotely through a wire protocol, that’s exactly what we have been talking. I guess it can also be used locally through library call, but I didn’t look into it. </li>
 </ul>
-<p>The confusion is, these terms are too similar to each other, and many of them have multiple meanings, but after understanding what they actually are, it should be easy to tell which one is it according to the context.</p>
-<p>The word WebDriver RemoteWebDriver is also used as class/interface names in some language bindings.</p>
+<p>The confusion is, these terms are too similar to each other, and many of them have multiple meanings, but after understanding what they actually are, it should be easy to tell which one is it according to the context. Selenium Core, Selenium RC and Selenium WebDriver all can be referred to as Selenium for short, just be aware.</p>
+<p>WebDriver and RemoteWebDriver are also used as class/interface names in some language bindings.</p>
 <p>Anyway, Selenium RC has been officially deprecated, if you read about it, you can choose to skip it to save your time.</p>
-<h1 id="Summary">Summary</h1><p>In this post, I tried to explain those confusing Selenium terms, I’ll write another post about how to actually use Selenium for automated testing later.</p>
+<h1 id="Summary">Summary</h1><p>In this post, I tried to explain those confusing Selenium terms, hoping it helps somebody.</p>
+<p>I have to say, Selenium’s architecture is remarkable, bindings and wire protocol are abstracted out perfectly. With this layered design, you can implement your own driver to drive any UI system you want, without losing all those bindings and grid deployment support, etc. It’s flexible and easy to extend.</p>
+<p>I’ll write another post about how to actually use Selenium for automated testing later, including test web apps and mobile apps.</p>
 <h1 id="References">References</h1><ul>
 <li><a href="http://www.aosabook.org/en/selenium.html" target="_blank" rel="external">The Architecture Of Open Source Applications - Selenium WebDriver</a></li>
 <li><a href="http://www.slideshare.net/AtirekGupta/selenium-workshop-34820044" target="_blank" rel="external">Understanding Selenium/RC, Webdriver Architecture and developing the page object test automation framework
@@ -246,7 +251,7 @@
   <div class="post-content">
     <header>
       
-        <time datetime="2013-03-30T10:03:45.000Z"><a href="/2013/03/30/a-detailed-introduction-to-node.js/">2013-03-30</a></time>
+        <time datetime="2013-03-30T10:03:45.000Z"><a href="/2013/03/30/a-detailed-introduction-to-node-js/">2013-03-30</a></time>
       
       
   
@@ -288,7 +293,7 @@
   <div class="post-content">
     <header>
       
-        <time datetime="2013-03-27T09:47:26.000Z"><a href="/2013/03/27/a-brief-introduction-to-node.js/">2013-03-27</a></time>
+        <time datetime="2013-03-27T09:47:26.000Z"><a href="/2013/03/27/a-brief-introduction-to-node-js/">2013-03-27</a></time>
       
       
   
@@ -387,7 +392,7 @@
   
     <li><a href="/tags/node-js/">Node.js</a><small>2</small></li>
   
-    <li><a href="/tags/selenium/">Selenium</a><small>1</small></li>
+    <li><a href="/tags/selenium-testing/">Selenium, Testing</a><small>1</small></li>
   
   </ul>
 </div>
@@ -411,11 +416,11 @@
       </li>
     
       <li>
-        <a href="/2013/03/30/a-detailed-introduction-to-node.js/">A Detailed Introduction to node.js</a>
+        <a href="/2013/03/30/a-detailed-introduction-to-node-js/">A Detailed Introduction to node.js</a>
       </li>
     
       <li>
-        <a href="/2013/03/27/a-brief-introduction-to-node.js/">A Brief Introduction to node.js</a>
+        <a href="/2013/03/27/a-brief-introduction-to-node-js/">A Brief Introduction to node.js</a>
       </li>
     
       <li>
